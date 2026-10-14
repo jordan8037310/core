@@ -3,6 +3,7 @@
 * Added `engineProvider` config (`auto`, `docker-desktop`, `orbstack`, `rancher`) so Lando can start and use OrbStack or Rancher Desktop on macOS [#3388](https://github.com/lando/lando/issues/3388)
 * Fixed `docker` and `docker compose` subprocesses ignoring `engineConfig.socketPath` and following the active docker context instead
 * Fixed `lando setup` installing Docker Desktop on macOS when `engineProvider` is OrbStack or Rancher Desktop
+* Fixed first-run autosetup resetting a custom `engineConfig` or `engineProvider` back to Docker Desktop
 * Fixed `Cannot read properties of null (reading 'trim')` on macOS when `Docker.app` is missing, eg on OrbStack [#138](https://github.com/lando/core/issues/138)
 
 ## v3.26.9 - [August 20, 2026](https://github.com/lando/core/releases/tag/v3.26.9)
