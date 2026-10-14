@@ -39,7 +39,11 @@ module.exports = async (lando, options) => {
       if (lando.engine.dockerInstalled === false) return false;
 
       // we also want to do an additional check on docker-destkop
-      if (lando.config.os.landoPlatform !== 'linux' && !fs.existsSync(getDockerDesktopBin())) return false;
+      // on macOS that is whichever engine provider app is in use
+      const engineApp = lando.config.os.landoPlatform === 'darwin'
+        ? require('../utils/get-engine-provider')(lando.config.engineProvider).app
+        : getDockerDesktopBin();
+      if (lando.config.os.landoPlatform !== 'linux' && !fs.existsSync(engineApp)) return false;
 
       // otherwise attempt to sus things out
       try {

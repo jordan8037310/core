@@ -18,7 +18,7 @@ const path = require('path');
  * otherwise the first of OrbStack or Rancher Desktop that is.
  *
  * @param {string} [name='auto'] - auto, docker-desktop, orbstack or rancher
- * @param {{home?: string, exists?: function(string): boolean}} [opts] - injectable for tests
+ * @param {Object} [opts] - home dir and an exists(path) check, injectable for tests
  * @return {EngineProvider} The resolved provider.
  */
 module.exports = (name = 'auto', {home = os.homedir(), exists = fs.existsSync} = {}) => {

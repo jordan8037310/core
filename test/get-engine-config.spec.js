@@ -28,8 +28,8 @@ describe('get-engine-config', () => {
     expect(env).to.not.have.property('DOCKER_HOST');
   });
 
-  it('should use the orbstack socket for dockerode and export it to subprocesses', function() {
-    if (process.platform === 'win32') this.skip();
+  it('should use the orbstack socket for dockerode and export it to subprocesses', () => {
+    if (process.platform === 'win32') return;
     const env = {};
     const config = getEngineConfig({engineProvider: 'orbstack', env});
     const socket = path.join(os.homedir(), '.orbstack', 'run', 'docker.sock');
@@ -38,8 +38,8 @@ describe('get-engine-config', () => {
   });
 
   // the lando/lando#3388 colima workaround: socketPath alone used to steer dockerode but not docker compose
-  it('should export DOCKER_HOST for a user-set socketPath', function() {
-    if (process.platform === 'win32') this.skip();
+  it('should export DOCKER_HOST for a user-set socketPath', () => {
+    if (process.platform === 'win32') return;
     const env = {};
     getEngineConfig({engineConfig: {host: '127.0.0.1', port: 2376, socketPath: '/tmp/colima.sock'}, env});
     expect(env.DOCKER_HOST).to.equal('unix:///tmp/colima.sock');
