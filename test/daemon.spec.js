@@ -159,7 +159,7 @@ describe('daemon', () => {
     const sinon = require('sinon');
     const runCommandPath = require.resolve('./../utils/run-command');
 
-    it('should open the provider app instead of Docker Desktop', async () => {
+    it('should start the provider engine with its own cli instead of Docker Desktop', async () => {
       require('./../utils/run-command');
       const original = require.cache[runCommandPath].exports;
       const calls = [];
@@ -174,7 +174,8 @@ describe('daemon', () => {
       isUp.resolves(true);
       try {
         await daemon.up({max: 2, backoff: 1});
-        calls.should.deep.equal([['open', '-g', '-a', '/Applications/OrbStack.app']]);
+        // live-tested: `open -a OrbStack` is a no-op once `orbctl stop` has stopped the engine
+        calls.should.deep.equal([['/Applications/OrbStack.app/Contents/MacOS/bin/orbctl', 'start']]);
       } finally {
         require.cache[runCommandPath].exports = original;
         isUp.restore();
