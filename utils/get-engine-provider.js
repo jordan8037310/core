@@ -11,6 +11,7 @@ const path = require('path');
  * @property {string} socketPath - the docker socket the engine serves
  * @property {string[]} [start] - command that starts the engine, absent for docker-desktop which has its own logic
  * @property {boolean} [unprivilegedPorts] - published ports are bound by an unprivileged process, so no ports < 1024
+ * @property {boolean} [selinux] - the engine vm enforces selinux, so the proxy's docker socket mount needs label=disable
  */
 
 /**
@@ -53,6 +54,8 @@ module.exports = (name = 'auto', {
       start: [podman, 'machine', 'start'],
       // gvproxy publishes ports as the user, and macOS refuses < 1024 on a specific ip to non-root
       unprivilegedPorts: true,
+      // the machine is fedora coreos with selinux enforcing: socket mounts need label=disable
+      selinux: true,
     },
   };
 
