@@ -10,6 +10,7 @@ const path = require('path');
  * @property {string} app - the macOS app bundle (or, for podman, the cli) that runs the engine
  * @property {string} socketPath - the docker socket the engine serves
  * @property {string[]} [start] - command that starts the engine, absent for docker-desktop which has its own logic
+ * @property {boolean} [unprivilegedPorts] - published ports are bound by an unprivileged process, so no ports < 1024
  */
 
 /**
@@ -50,6 +51,8 @@ module.exports = (name = 'auto', {
       app: podman,
       socketPath: path.join(tmpdir, 'podman', 'podman-machine-default-api.sock'),
       start: [podman, 'machine', 'start'],
+      // gvproxy publishes ports as the user, and macOS refuses < 1024 on a specific ip to non-root
+      unprivilegedPorts: true,
     },
   };
 
