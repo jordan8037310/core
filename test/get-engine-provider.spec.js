@@ -11,7 +11,12 @@ const expect = chai.expect;
 const getEngineProvider = require('../utils/get-engine-provider');
 
 // fake filesystem: only the listed app bundles exist
-const only = (...apps) => ({home: '/Users/me', exists: file => apps.includes(file)});
+const only = (...apps) => ({
+  home: '/Users/me',
+  tmpdir: '/var/folders/x/T',
+  exists: file => apps.includes(file),
+  which: () => '/opt/homebrew/bin/podman',
+});
 
 describe('get-engine-provider', () => {
   it('should resolve auto to docker-desktop when Docker.app exists, even alongside others', () => {
@@ -39,7 +44,17 @@ describe('get-engine-provider', () => {
     expect(getEngineProvider('orbstack', only('/Applications/Docker.app')).name).to.equal('orbstack');
   });
 
+  it('should resolve podman to its default machine api socket in TMPDIR and start it with podman machine', () => {
+    const provider = getEngineProvider('podman', only());
+    expect(provider.socketPath).to.equal('/var/folders/x/T/podman/podman-machine-default-api.sock');
+    expect(provider.start).to.deep.equal(['/opt/homebrew/bin/podman', 'machine', 'start']);
+  });
+
+  it('should never pick podman for auto, even when it is the only engine installed', () => {
+    expect(getEngineProvider('auto', only('/opt/homebrew/bin/podman')).name).to.equal('docker-desktop');
+  });
+
   it('should throw on an unknown provider', () => {
-    expect(() => getEngineProvider('podman', only())).to.throw(/Unknown engineProvider "podman"/);
+    expect(() => getEngineProvider('colima', only())).to.throw(/Unknown engineProvider "colima"/);
   });
 });
