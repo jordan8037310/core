@@ -20,13 +20,14 @@ const path = require('path');
  * `auto` keeps the historical behavior: Docker Desktop if it is installed,
  * otherwise the first of OrbStack or Rancher Desktop that is.
  *
- * @param {string} [name='auto'] - auto, docker-desktop, orbstack, rancher or podman (opt-in only)
- * @param {Object} [opts] - home and tmp dirs, exists(path) and which(bin), injectable for tests
+ * @param {string} [name='auto'] - auto, docker-desktop, orbstack, rancher, or podman or kiri (opt-in only)
+ * @param {Object} [opts] - home and tmp dirs, uid, exists(path) and which(bin), injectable for tests
  * @return {EngineProvider} The resolved provider.
  */
 module.exports = (name = 'auto', {
   home = os.homedir(),
   tmpdir = os.tmpdir(),
+  uid = process.getuid?.(),
   exists = fs.existsSync,
   which = bin => String(require('shelljs').which(bin) ?? ''),
 } = {}) => {
@@ -57,10 +58,20 @@ module.exports = (name = 'auto', {
       // the machine is fedora coreos with selinux enforcing: socket mounts need label=disable
       selinux: true,
     },
+    // kiri's daemon is a launch agent and its vm wakes on the first api call: kickstart starts the daemon if it
+    // exited and is a no-op if it runs. Opening Kiri.app instead re-runs `kiri setup`, which rewrites that agent.
+    // Its domain routers default to 80/443, so move them (KIRI_HTTP_PORT/KIRI_HTTPS_PORT) or they take the proxy's ports
+    'kiri': {
+      app: '/Applications/Kiri.app',
+      socketPath: path.join(home, '.kiri', 'run', 'docker.sock'),
+      start: ['launchctl', 'kickstart', `gui/${uid}/dev.kiri.daemon`],
+      // like gvproxy, kiri relays published ports as the user, so < 1024 on a specific ip is refused
+      unprivilegedPorts: true,
+    },
   };
 
-  // podman is opt-in: having the cli installed does not mean a machine exists
-  const autoCandidates = Object.keys(providers).filter(key => key !== 'podman');
+  // podman is opt-in: having the cli installed does not mean a machine exists. kiri is opt-in while it is pre-1.0
+  const autoCandidates = Object.keys(providers).filter(key => !['podman', 'kiri'].includes(key));
   if (name === 'auto') name = autoCandidates.find(key => exists(providers[key].app)) ?? 'docker-desktop';
   if (!providers[name]) {
     throw new Error(`Unknown engineProvider "${name}", use one of auto, ${Object.keys(providers).join(', ')}`);
