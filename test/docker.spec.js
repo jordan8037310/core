@@ -46,6 +46,22 @@ describe('docker', () => {
     });
   });
 
+  describe('#modem', () => {
+    it('should drop host and port when connecting over a socket so requests use origin-form paths', () => {
+      const engineConfig = {socketPath: '/Users/me/.kiri/run/docker.sock', host: '127.0.0.1', port: 2376};
+      const modem = new Landerode(engineConfig).modem;
+      expect(modem.socketPath).to.equal('/Users/me/.kiri/run/docker.sock');
+      expect(modem.host).to.be.undefined;
+      expect(engineConfig.host).to.equal('127.0.0.1');
+    });
+
+    it('should keep host and port for a tcp engine', () => {
+      const modem = new Landerode({host: '10.0.0.5', port: 2375}).modem;
+      expect(modem.host).to.equal('10.0.0.5');
+      expect(modem.port).to.equal(2375);
+    });
+  });
+
   describe('#createNetwork', () => {
     it('should merge name correctly into opts', () => {
       const stub = sinon.stub(landerode, 'createNetwork')
