@@ -14,6 +14,7 @@ const getEngineProvider = require('../utils/get-engine-provider');
 const only = (...apps) => ({
   home: '/Users/me',
   tmpdir: '/var/folders/x/T',
+  uid: 501,
   exists: file => apps.includes(file),
   which: () => '/opt/homebrew/bin/podman',
 });
@@ -52,6 +53,16 @@ describe('get-engine-provider', () => {
 
   it('should never pick podman for auto, even when it is the only engine installed', () => {
     expect(getEngineProvider('auto', only('/opt/homebrew/bin/podman')).name).to.equal('docker-desktop');
+  });
+
+  it('should resolve kiri to its socket in ~/.kiri and start it by kickstarting its launch agent', () => {
+    const provider = getEngineProvider('kiri', only());
+    expect(provider.socketPath).to.equal('/Users/me/.kiri/run/docker.sock');
+    expect(provider.start).to.deep.equal(['launchctl', 'kickstart', 'gui/501/dev.kiri.daemon']);
+  });
+
+  it('should never pick kiri for auto, even when it is the only engine installed', () => {
+    expect(getEngineProvider('auto', only('/Applications/Kiri.app')).name).to.equal('docker-desktop');
   });
 
   it('should throw on an unknown provider', () => {
