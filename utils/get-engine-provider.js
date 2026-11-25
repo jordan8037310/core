@@ -65,6 +65,8 @@ module.exports = (name = 'auto', {
       app: '/Applications/Kiri.app',
       socketPath: path.join(home, '.kiri', 'run', 'docker.sock'),
       start: ['launchctl', 'kickstart', `gui/${uid}/dev.kiri.daemon`],
+      // like gvproxy, kiri relays published ports as the user, so < 1024 on a specific ip is refused
+      unprivilegedPorts: true,
     },
   };
 

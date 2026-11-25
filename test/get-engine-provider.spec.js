@@ -59,6 +59,7 @@ describe('get-engine-provider', () => {
     const provider = getEngineProvider('kiri', only());
     expect(provider.socketPath).to.equal('/Users/me/.kiri/run/docker.sock');
     expect(provider.start).to.deep.equal(['launchctl', 'kickstart', 'gui/501/dev.kiri.daemon']);
+    expect(provider.unprivilegedPorts).to.be.true;
   });
 
   it('should never pick kiri for auto, even when it is the only engine installed', () => {
